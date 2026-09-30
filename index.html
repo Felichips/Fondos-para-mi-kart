@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Karting Feli 🏎️</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#090b10">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #090b10;
+      color: white;
+    }
+
+    .app {
+      max-width: 560px;
+      margin: auto;
+      padding: 25px 16px 40px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .logo {
+      font-size: 65px;
+    }
+
+    h1 {
+      margin: 5px 0;
+      font-size: 32px;
+    }
+
+    .subtitle {
+      color: #9ca7b8;
+    }
+
+    .card {
+      background: #141923;
+      border: 1px solid #293244;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .label {
+      color: #9ca7b8;
+      font-size: 14px;
+    }
+
+    .balance {
+      font-size: 42px;
+      font-weight: bold;
+      margin: 5px 0 15px;
+    }
+
+    .progress {
+      width: 100%;
+      height: 18px;
+      background: #293244;
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff3b30, #ffb000);
+      transition: width .4s;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat {
+      background: #0d121b;
+      padding: 15px;
+      border-radius: 15px;
+    }
+
+    .income {
+      color: #35d98a;
+      font-weight: bold;
+      font-size: 21px;
+    }
+
+    .expense {
+      color: #ff6b6b;
+      font-weight: bold;
+      font-size: 21px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 14px;
+      margin: 7px 0;
+      border-radius: 13px;
+      border: 1px solid #344056;
+      background: #0d121b;
+      color: white;
+      font-size: 17px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 13px;
+      background: #ff3b30;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #293244;
+    }
+
+    .history {
+      margin-top: 12px;
+    }
+
+    .movement {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0d121b;
+      padding: 13px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+
+    .date {
+      color: #8e98a8;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #9ca7b8;
+      padding: 15px;
+    }
+
+    .goal-text {
+      color: #9ca7b8;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="logo">🏎️</div>
+    <h1>Karting Feli</h1>
+    <div class="subtitle">Fondo para llegar a la pista 🏁</div>
+  </div>
+
+  <!-- SALDO -->
+  <div class="card">
+    <div class="label">Dinero disponible</div>
+
+    <div class="balance" id="balance">
+      $52.000
+    </div>
+
+    <div class="row">
+      <span class="goal-text">Meta</span>
+      <strong id="goal">$100.000</strong>
+    </div>
+
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="row goal-text">
+      <span id="percentage">52%</span>
+      <span id="remaining">Faltan $48.000</span>
+    </div>
+  </div>
+
+  <!-- ESTADÍSTICAS -->
+  <div class="card">
+
+    <div class="stats">
+
+      <div class="stat">
+        <div class="label">💰 Ingresos</div>
+        <div class="income" id="totalIncome">$0</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">💸 Egresos</div>
+        <div class="expense" id="totalExpense">$0</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- NUEVO MOVIMIENTO -->
+  <div class="card">
+
+    <h2>💵 Nuevo movimiento</h2>
+
+    <select id="type">
+      <option value="income">💰 Ingreso</option>
+      <option value="expense">💸 Egreso</option>
+    </select>
+
+    <input
+      id="amount"
+      type="number"
+      min="1"
+      placeholder="Monto, por ejemplo 3000"
+    >
+
+    <input
+      id="description"
+      type="text"
+      maxlength="40"
+      placeholder="Descripción"
+    >
+
+    <button onclick="addMovement()">
+      Guardar movimiento
+    </button>
+
+    <button class="secondary" onclick="changeGoal()">
+      🎯 Cambiar meta
+    </button>
+
+  </div>
+
+  <!-- HISTORIAL -->
+  <div class="card">
+
+    <div class="row">
+      <h2>📜 Historial</h2>
+
+      <span class="goal-text" id="movementCount">
+        0 movimientos
+      </span>
+    </div>
+
+    <div class="history" id="history"></div>
+
+  </div>
+
+</div>
+
+<script>
+
+const STORAGE_KEY = "karting-feli-v1";
+
+let data = JSON.parse(
+  localStorage.getItem(STORAGE_KEY)
+);
+
+if (!data) {
+
+  data = {
+    balance: 52000,
+    goal: 100000,
+    movements: []
+  };
+
+}
+
+/* FORMATO DE DINERO */
+
+function money(number) {
+
+  return "$" + Math.round(number)
+    .toLocaleString("es-CL");
+
+}
+
+
+/* GUARDAR */
+
+function save() {
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(data)
+  );
+
+}
+
+
+/* ACTUALIZAR PANTALLA */
+
+function render() {
+
+  document.getElementById("balance")
+    .textContent = money(data.balance);
+
+  document.getElementById("goal")
+    .textContent = money(data.goal);
+
+
+  let percentage =
+    (data.balance / data.goal) * 100;
+
+  percentage =
+    Math.max(0, Math.min(100, percentage));
+
+
+  document.getElementById("progressBar")
+    .style.width = percentage + "%";
+
+
+  document.getElementById("percentage")
+    .textContent = Math.floor(percentage) + "%";
+
+
+  if (data.balance >= data.goal) {
+
+    document.getElementById("remaining")
+      .textContent = "🏁 ¡META CONSEGUIDA!";
+
+  } else {
+
+    document.getElementById("remaining")
+      .textContent =
+      "Faltan " +
+      money(data.goal - data.balance);
+
+  }
+
+
+  /* INGRESOS Y EGRESOS */
+
+  let income = 0;
+  let expense = 0;
+
+  data.movements.forEach(movement => {
+
+    if (movement.type === "income") {
+
+      income += movement.amount;
+
+    } else {
+
+      expense += movement.amount;
+
+    }
+
+  });
+
+
+  document.getElementById("totalIncome")
+    .textContent = money(income);
+
+  document.getElementById("totalExpense")
+    .textContent = money(expense);
+
+
+  /* CONTADOR */
+
+  document.getElementById("movementCount")
+    .textContent =
+    data.movements.length +
+    (data.movements.length === 1
+      ? " movimiento"
+      : " movimientos");
+
+
+  /* HISTORIAL */
+
+  const history =
+    document.getElementById("history");
+
+
+  if (data.movements.length === 0) {
+
+    history.innerHTML =
+      '<div class="empty">' +
+      'Todavía no hay movimientos.' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  history.innerHTML =
+    data.movements.map(movement => {
+
+      const isIncome =
+        movement.type === "income";
+
+
+      return `
+
+        <div class="movement">
+
+          <div>
+
+            <strong>
+              ${
+                movement.description ||
+                (isIncome
+                  ? "Ingreso"
+                  : "Egreso")
+              }
+            </strong>
+
+            <div class="date">
+              ${movement.date}
+            </div>
+
+          </div>
+
+          <strong
+            class="${
+              isIncome
+                ? "income"
+                : "expense"
+            }"
+          >
+            ${
+              isIncome
+                ? "+"
+                : "−"
+            }${money(movement.amount)}
+          </strong>
+
+        </div>
+
+      `;
+
+    }).join("");
+
+}
+
+
+/* AGREGAR MOVIMIENTO */
+
+function addMovement() {
+
+  const amountInput =
+    document.getElementById("amount");
+
+  const descriptionInput =
+    document.getElementById("description");
+
+  const type =
+    document.getElementById("type").value;
+
+
+  const amount =
+    Number(amountInput.value);
+
+
+  if (
+    !Number.isFinite(amount) ||
+    amount <= 0
+  ) {
+
+    alert("Escribe un monto válido.");
+
+    return;
+
+  }
+
+
+  /* EVITAR GASTAR MÁS DE LO DISPONIBLE */
+
+  if (
+    type === "expense" &&
+    amount > data.balance
+  ) {
+
+    alert(
+      "No tienes suficiente dinero para ese egreso."
+    );
+
+    return;
+
+  }
+
+
+  /* CAMBIAR SALDO */
+
+  if (type === "income") {
+
+    data.balance += amount;
+
+  } else {
+
+    data.balance -= amount;
+
+  }
+
+
+  /* GUARDAR MOVIMIENTO */
+
+  data.movements.unshift({
+
+    type: type,
+
+    amount: amount,
+
+    description:
+      descriptionInput.value.trim(),
+
+    date:
+      new Date().toLocaleDateString("es-CL")
+
+  });
+
+
+  /* LIMPIAR */
+
+  amountInput.value = "";
+
+  descriptionInput.value = "";
+
+
+  save();
+
+  render();
+
+}
+
+
+/* CAMBIAR META */
+
+function changeGoal() {
+
+  const newGoal =
+    Number(
+      prompt(
+        "¿Cuál será tu nueva meta?",
+        data.goal
+      )
+    );
+
+
+  if (
+    Number.isFinite(newGoal) &&
+    newGoal > 0
+  ) {
+
+    data.goal = newGoal;
+
+    save();
+
+    render();
+
+  }
+
+}
+
+
+/* INICIAR */
+
+render();
+
+
+/* ACTIVAR SERVICE WORKER */
+
+if ("serviceWorker" in navigator) {
+
+  window.addEventListener(
+    "load",
+    () => {
+
+      navigator.serviceWorker
+        .register("./sw.js")
+        .then(() => {
+
+          console.log(
+            "Karting Feli: app instalada correctamente."
+          );
+
+        })
+        .catch(error => {
+
+          console.error(
+            "Error instalando la app:",
+            error
+          );
+
+        });
+
+    }
+  );
+
+}
+
+</script>
+
+</body>
+</html>
